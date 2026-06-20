@@ -34,6 +34,12 @@ if [ ! -f "scripts/vault_sync.py" ]; then
 fi
 
 mkdir -p .vault-sync
+
+# Actualizar graphify graph antes del report (solo si graph.json existe)
+if command -v graphify >/dev/null 2>&1 && [ -f "graphify-out/graph.json" ]; then
+  graphify update . --no-cluster --force >> .vault-sync/post-commit.log 2>&1
+fi
+
 "$PY" scripts/vault_sync.py report >> .vault-sync/post-commit.log 2>&1
 RC=$?
 

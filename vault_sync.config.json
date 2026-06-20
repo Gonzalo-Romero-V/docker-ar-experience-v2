@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "project_name": "Docker AR Tutor",
   "vault_path": "C:/Users/Gonzalo/Dev/MATERIAS/03_EVA/docker_ar_experience_v2/vault",
-  "extractor": "generic",
+  "extractor": "graphify",
 
   "hierarchy_mapping": {
     "H1_intent": ["vault/intent/**"],
@@ -90,7 +90,7 @@
       "app/frontend/lib/**",
       "app/frontend/hooks/**"
     ],
-    "Backend": [
+    "backend": [
       "app/backend/src/**"
     ],
     "RAGService": [

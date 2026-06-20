@@ -1,0 +1,58 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: docker_ar_v2_db
+    environment:
+      POSTGRES_DB: docker_ar_v2
+      POSTGRES_USER: docker_ar
+      POSTGRES_PASSWORD: docker_ar_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_v2:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docker_ar -d docker_ar_v2"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./app/backend
+      dockerfile: Dockerfile
+    container_name: docker_ar_v2_backend
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://docker_ar:docker_ar_dev@db:5432/docker_ar_v2
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      INGEST_SECRET: ${INGEST_SECRET}
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app/backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile
+    container_name: docker_ar_v2_frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./app/frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  pgdata_v2:
+    name: docker_ar_v2_pgdata

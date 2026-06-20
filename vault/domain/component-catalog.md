@@ -183,3 +183,17 @@ Activar solo cuando el componente complete el ciclo completo: schema → rendere
 ## Nota: DiagramPanel v2 (idea diferida)
 
 Existe la intención de abstraer la lógica de Canvas de **Fluyo** (editor de diagramas vanilla JS) en un microservicio interno. El LLM generaría un spec semántico de nodos+aristas (sin posiciones), un servicio haría auto-layout (dagre) + render con el estilo visual de Fluyo (nodos animados, íconos cloud). Por ahora Mermaid cubre el 90% del valor con 0% de esa complejidad. Retomar cuando `DiagramPanel` MVP esté estable.
+
+## Estado de implementación (2026-06-20)
+Schemas Zod implementados en `packages/shared/src/components.ts`. `SceneItemSchema` discriminated union activo con los 6 componentes MVP.
+
+| Componente | Schema | React component | Test DOM |
+|---|---|---|---|
+| ConceptCard | ✅ | ⏳ | ⏳ |
+| ComparisonTable | ✅ | ⏳ | ⏳ |
+| CommandRunner | ✅ | ⏳ | ⏳ |
+| GlossaryPop | ✅ | ⏳ | ⏳ |
+| MiniQuiz | ✅ | ⏳ | ⏳ |
+| DiagramPanel | ✅ | ⏳ | ⏳ |
+
+**Pendiente:** stubs React en `app/frontend/components/learning/` (candidatos a delegación Codex con spec en `tasks/active/`).

@@ -197,3 +197,20 @@ app/backend/src/
 - **`POST /ingest` siempre protegido** — al menos Bearer token en header. No exponerlo público.
 - **Cache no invalida automáticamente** — si se re-indexa, limpiar la tabla `query_cache` manualmente o agregar TTL.
 - **Fastify plugins: orden importa** — `env` → `db` → `openai` → routes. Si db falla, el server no debe arrancar silenciosamente.
+
+## Estado de implementación (2026-06-20)
+Scaffold completado en `app/services/rag/`. Todos los módulos implementados y tsc limpio.
+
+| Módulo | Estado | Notas |
+|---|---|---|
+| `hybrid.ts` | ✅ | BM25 (pg FTS) + pgvector ANN + RRF implementado |
+| `confidence.ts` | ✅ | grounded/weak/out_of_scope por top chunk score (0.7/0.4 thresholds) |
+| `cache.ts` | ✅ | SHA256(normalizeQuery) → `query_cache` ON CONFLICT DO UPDATE |
+| `chunk.ts` | ✅ | Split H2/H3 + max-token guard: >3200 chars → split por párrafos |
+| `parse.ts` | ✅ | walkMarkdownFiles + stripFrontmatter + minimatch includeGlobs |
+| `embed.ts` | ✅ | text-embedding-3-small via OpenAI |
+| `ingest.ts` | ✅ | parse → chunk → embed → store, dedup por hash SHA256 |
+| `config.ts` | ✅ | KB_CONFIG con docker/docs globs, minChunkChars 160, dim 1536 |
+| `types.ts` | ✅ | Chunk, RetrievedChunk, ConfidenceLevel, KBConfig, MarkdownFile |
+
+**Pendiente:** tests unitarios de `confidence.ts` y `composition.ts` (candidatos a delegación Codex). Schema SQL (`infra/postgres/init.sql`) aún no existe.

@@ -143,3 +143,18 @@ Agregar un campo a `ResponseEnvelope` o un tipo a `SceneItemSchema` requiere:
 5. Actualizar esta nota (via `/sync` o edición directa si es cambio de contrato)
 
 Esto es deliberadamente costoso para evitar drift del contrato.
+
+## Estado de implementación (2026-06-20)
+Schemas Zod implementados en `packages/shared/src/envelope.ts`. Pipeline de orquestación implementado 1:1 con el vault.
+
+| Módulo | Archivo | Estado |
+|---|---|---|
+| ResponseEnvelopeSchema | `packages/shared/src/envelope.ts` | ✅ |
+| JSON Schema para OpenAI | `app/services/llm/orchestrate.ts` (zodToJsonSchema) | ✅ |
+| orchestrateAnswer (10 pasos) | `app/services/llm/orchestrate.ts` | ✅ |
+| OpenAIProvider + retry backoff | `app/services/llm/openai.ts` | ✅ |
+| buildSystemPrompt / buildUserPrompt | `app/services/llm/prompt.ts` | ✅ |
+| normalizeComposition | `app/services/llm/composition.ts` | ✅ |
+| Fallback ConceptCard | `app/services/llm/orchestrate.ts` | ✅ |
+
+**Pendiente:** tests de integración del pipeline end-to-end (requiere DB + OpenAI key).
