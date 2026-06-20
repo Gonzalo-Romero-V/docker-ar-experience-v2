@@ -12,19 +12,30 @@ created: 2026-06-20
 ```
 docker_ar_experience_v2/
 ├── app/
-│   ├── frontend/          ← Next.js app (mobile-first, web + AR shell)
-│   ├── services/
-│   │   └── rag-service/   ← Fastify + pgvector + OpenAI
-│   └── docs/              ← documentación técnica interna
-├── packages/
-│   └── shared/            ← tipos TypeScript + schemas Zod compartidos
-├── vault/                 ← vault semántico (fuente de verdad H1-H3)
-├── tasks/                 ← specs de delegación a Codex
+│   ├── frontend/              ← Next.js 15 (UI web + AR client)
+│   ├── backend/               ← Fastify HTTP server (routes, plugins, lifecycle)
+│   └── servicios/
+│       ├── rag/               ← retrieval: hybrid search, confidence, cache, ingest
+│       ├── llm/               ← LLM: prompt, composition, orchestrate, openai client
+│       ├── shared/            ← Zod schemas + tipos TS (SceneItem, ResponseEnvelope)
+│       └── ar/                ← deferred (no hay AR server-side en MVP)
+├── infra/
+│   ├── docker-compose.yml
+│   └── postgres/
+│       └── init.sql           ← extensión pgvector, tablas documents/chunks/cache
+├── vault/                     ← vault semántico (fuente de verdad H1-H3)
+├── tasks/                     ← specs de delegación a Codex
 │   ├── active/
 │   ├── completed/
 │   └── evaluated/
-└── scripts/               ← engine vault-sync
+└── scripts/                   ← engine vault-sync
 ```
+
+**Notas de estructura:**
+- No hay `packages/` — los tipos compartidos viven en `app/servicios/shared/`
+- El frontend importa desde shared via TypeScript path alias: `@shared/*` → `../../servicios/shared/src/*`
+- El backend importa desde rag y llm via alias: `@rag/*`, `@llm/*`
+- `app/servicios/ar/` es un placeholder para funcionalidad server-side AR futura (post-MVP)
 
 ## Separación de responsabilidades
 
@@ -68,58 +79,80 @@ components/ar/           ← lógica AR (ARExperience, SpatialBoard, SpatialPane
 
 Ambas capas **comparten la misma cámara Three.js** y el mismo loop `requestAnimationFrame`. El CSS3DRenderer usa la misma `camera` y `domElement` container que el WebGL renderer, superpuestos via CSS (`position: absolute`, mismo z-index stack).
 
-### RAG Service: responsabilidades
+### Backend: responsabilidades (app/backend)
 
+El backend es el proceso Fastify que expone la API HTTP. Las rutas son delgadas — solo validan el request (Zod) y delegan a los servicios.
+
+```
+app/backend/src/
+  routes/          ← endpoints HTTP (H4 — contratos)
+    ask.ts         ← POST /ask
+    ingest.ts      ← POST /ingest (protegido)
+    health.ts      ← GET /health
+  plugins/         ← plugins Fastify con lifecycle limpio (H4)
+    db.ts          ← pool PostgreSQL (fastify.decorate, onClose cleanup)
+    openai.ts      ← cliente OpenAI (fastify.decorate)
+    cors.ts        ← CORS config
+    env.ts         ← validación env con Zod al startup
+  index.ts         ← bootstrap: register plugins → register routes → listen
+```
+
+### Servicios: responsabilidades (app/servicios)
+
+Los servicios son módulos de lógica pura — sin dependencia directa de Fastify. Se importan desde el backend.
+
+**`app/servicios/rag/`**
+```
+hybrid.ts          ← búsqueda RRF (BM25 + vector via pgvector)
+confidence.ts      ← scoring: grounded / weak / out_of_scope
+cache.ts           ← cache de respuestas en PostgreSQL
+ingest.ts          ← pipeline: clone → parse → chunk → embed → load
+embed.ts           ← embeddings via OpenAI API
+```
+
+**`app/servicios/llm/`**
+```
+orchestrate.ts     ← orquestación principal: prompt → OpenAI → parse → validate
+prompt.ts          ← system prompt + buildUserPrompt(chunks)
+composition.ts     ← normalizeComposition: dedup, order, cap 5
+openai.ts          ← cliente OpenAI con retry (rate limit 429)
+```
+
+**`app/servicios/shared/`**
 ```
 src/
-  routes/          ← endpoints Fastify (H4 — contratos)
-  schemas/         ← tipos Zod de request/response (H4)
-  plugins/         ← plugins Fastify (db, openai, cors, etc.) (H4)
-  services/        ← lógica de negocio (H5)
-    ingest.ts      ← clonar/parsear docs Docker, chunking, embeddings, load a pgvector
-    retrieval.ts   ← búsqueda vectorial + keyword (híbrido)
-    llm.ts         ← orquestación OpenAI: system prompt + contexto + respuesta estructurada
-    cache.ts       ← cache de respuestas (si aplica)
-  lib/             ← helpers internos (H5)
+  components.ts    ← SceneItemSchema (discriminated union, catálogo activo)
+  envelope.ts      ← ResponseEnvelopeSchema
+  index.ts         ← re-exports
 ```
 
-Endpoints mínimos v1:
+Endpoints MVP:
 - `GET /health`
-- `POST /ask` → recibe `{ question: string }`, devuelve respuesta estructurada con componentes
-- `POST /ingest` → dispara pipeline de ingestión (protegido, solo interno)
+- `POST /ask` → `{ question: string }` → `ResponseEnvelope`
+- `POST /ingest` → protegido con header interno → dispara pipeline de ingestión
 
 ### Contrato LLM → UI (invariante crítico)
 
-El LLM produce un JSON con este shape (schema Zod en `packages/shared`):
+El LLM produce un `ResponseEnvelope` (schema Zod en `app/servicios/shared`). Ver detalle completo en `domain/llm-response-contract.md`.
 
-```typescript
-type LLMResponse = {
-  topic: string
-  components: Array<ComponentSpec>
-}
+El LLM **nunca** decide posición, escala, rotación ni distribución espacial en AR.
 
-type ComponentSpec = {
-  type: ComponentType   // catálogo cerrado: "ConceptCard" | "ComparisonTable" | "MiniQuiz" | ...
-  props: Record<string, unknown>  // tipado específico por tipo
-  priority: number      // 1 = principal, 2 = secundario (influye en layout)
-}
-```
+## Catálogo de componentes pedagógicos (MVP activo)
 
-El sistema mapea `ComponentSpec[]` a React components reales. **El LLM nunca decide posición, escala, rotación ni distribución espacial.**
-
-## Catálogo de componentes pedagógicos (v1)
+Detalle completo con schemas Zod en `domain/component-catalog.md`.
 
 | Tipo | Descripción |
 |------|-------------|
 | `ConceptCard` | Tarjeta con concepto, definición e icono |
-| `ComparisonTable` | Tabla comparativa (ej: image vs container) |
+| `ComparisonTable` | Tabla comparativa (imagen vs contenedor, etc.) |
+| `CommandRunner` | Comando Docker con flags explicados y botón copiar |
+| `GlossaryPop` | Términos clave con definición expandible |
 | `MiniQuiz` | Pregunta de opción múltiple con feedback |
-| `CommandRunner` | Bloque de comando Docker con descripción y botón copiar |
-| `DiagramPanel` | Panel para diagramas (SVG estático o animado) |
-| `StepwiseStepper` | Proceso paso a paso numerado |
-| `FlashcardDeck` | Mazo de tarjetas frente/reverso |
-| `CodeExplanation` | Snippet de código con anotaciones |
-| `ChecklistPanel` | Lista de verificación interactiva |
+| `DiagramPanel` | Diagrama generado por LLM (Mermaid → SVG dinámico client-side) |
+
+**Roadmap (no activo):** StepwiseStepper, CodeExplanation, ChecklistPanel, AnalogyMapper, DecisionTree, TimelineSequence, FlashcardDeck.
+
+**Regla**: el LLM solo produce tipos que tengan schema + renderer React + test DOM + preview CSS3D.
 
 ## Board espacial: distribución radial por paneles planos
 
