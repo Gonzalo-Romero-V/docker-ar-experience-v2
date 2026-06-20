@@ -1,0 +1,13 @@
+{
+  "name": "docker-ar-experience-v2",
+  "private": true,
+  "scripts": {
+    "db": "docker compose up db -d",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f db",
+    "backend": "npm run dev --prefix app/backend",
+    "frontend": "npm run dev --prefix app/frontend",
+    "dev:backend": "npm run db && npm run backend",
+    "ingest": "curl -s -X POST http://localhost:3000/ingest -H \"X-Ingest-Secret: docker-ar-dev-secret\" | cat"
+  }
+}
