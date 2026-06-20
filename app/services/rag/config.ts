@@ -3,11 +3,11 @@ import type { KBConfig } from './types.js';
 export const KB_CONFIG: KBConfig = {
   repo: 'docker/docs',
   includeGlobs: [
-    'engine/**',
-    'build/**',
-    'compose/**',
-    'storage/**',
-    'network/**',
+    'manuals/engine/**',
+    'manuals/build/**',
+    'manuals/compose/**',
+    'manuals/desktop/**',
+    'manuals/security/**',
     'reference/**',
     'get-started/**',
   ],

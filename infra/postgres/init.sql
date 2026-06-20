@@ -29,10 +29,10 @@ CREATE TABLE IF NOT EXISTS document_chunks (
 -- ── Query response cache ────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS query_cache (
     id          SERIAL PRIMARY KEY,
-    query_hash  TEXT NOT NULL UNIQUE,                   -- SHA256(normalizeQuery(query))
-    response    JSONB NOT NULL,                         -- ResponseEnvelope JSON
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    hash        TEXT NOT NULL UNIQUE,                   -- SHA256(normalizeQuery(query))
+    query       TEXT NOT NULL,                          -- normalized query text
+    envelope    JSONB NOT NULL,                         -- ResponseEnvelope JSON
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ── Indexes ─────────────────────────────────────────────────────────────────
@@ -53,4 +53,4 @@ CREATE INDEX IF NOT EXISTS idx_chunks_hash
 
 -- Cache lookup by query hash
 CREATE INDEX IF NOT EXISTS idx_query_cache_hash
-    ON query_cache (query_hash);
+    ON query_cache (hash);
