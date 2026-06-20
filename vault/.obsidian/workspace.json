@@ -178,6 +178,8 @@
   },
   "active": "9b2f83d8deb34cf1",
   "lastOpenFiles": [
+    "INDEX.md.tmp.1568.7081e25eb390",
+    "INDEX.md.tmp.1568.fe60ae42bacf",
     "decisions/database.md",
     "decisions/database.md.tmp.1568.1a15e7fd04d5",
     "domain/component-catalog.md.tmp.1568.17863c50accc",
@@ -189,7 +191,6 @@
     "decisions/architecture.md.tmp.1568.f491a0bfe788",
     "domain/rag-pipeline.md",
     "domain/rag-pipeline.md.tmp.26576.de856d727b21",
-    "decisions/stack.md.tmp.26576.f30658fef609",
     "intent/vision.md",
     "domain/llm-response-contract.md",
     "domain/component-catalog.md",

@@ -214,3 +214,16 @@ Scaffold completado en `app/services/rag/`. Todos los módulos implementados y t
 | `types.ts` | ✅ | Chunk, RetrievedChunk, ConfidenceLevel, KBConfig, MarkdownFile |
 
 **Pendiente:** tests unitarios de `confidence.ts` y `composition.ts` (candidatos a delegación Codex). Schema SQL (`infra/postgres/init.sql`) aún no existe.
+
+## Tests unitarios — confidence (2026-06-20)
+7 tests en `app/services/rag/confidence.test.ts` cubriendo `deriveConfidence`:
+
+- array vacío → `out_of_scope`
+- score exactamente 0.7 → `grounded`
+- score > 0.7 → `grounded`
+- score exactamente 0.4 → `weak`
+- score entre 0.4 y 0.7 → `weak`
+- score < 0.4 → `out_of_scope`
+- múltiples chunks → solo el top score determina el nivel
+
+Runner: `cd app/backend && npx vitest run ../services/rag/confidence.test.ts`

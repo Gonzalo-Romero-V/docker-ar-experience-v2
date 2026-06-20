@@ -158,3 +158,16 @@ Schemas Zod implementados en `packages/shared/src/envelope.ts`. Pipeline de orqu
 | Fallback ConceptCard | `app/services/llm/orchestrate.ts` | ✅ |
 
 **Pendiente:** tests de integración del pipeline end-to-end (requiere DB + OpenAI key).
+
+## Tests unitarios — normalizeComposition (2026-06-20)
+7 tests en `app/services/llm/composition.test.ts` cubriendo `normalizeComposition`:
+
+- sin MiniQuiz → escena preservada tal cual
+- MiniQuiz en medio → se mueve al final
+- MiniQuiz al inicio → se mueve al final
+- dos ConceptCard → ambos preservados (no se deduplan por diseño)
+- dos ComparisonTable → solo queda el primero (dedup por tipo)
+- más de 5 items → cap a 5
+- cap + MiniQuiz → 5 items con MiniQuiz al final
+
+Runner: `cd app/backend && npx vitest run ../services/llm/composition.test.ts`

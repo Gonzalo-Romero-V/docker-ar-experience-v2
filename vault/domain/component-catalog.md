@@ -197,3 +197,18 @@ Schemas Zod implementados en `packages/shared/src/components.ts`. `SceneItemSche
 | DiagramPanel | ✅ | ⏳ | ⏳ |
 
 **Pendiente:** stubs React en `app/frontend/components/learning/` (candidatos a delegación Codex con spec en `tasks/active/`).
+
+## Stubs implementados (2026-06-20)
+Los 6 componentes MVP están scaffolded en `app/frontend/components/learning/`:
+
+| Componente | Archivo | Estado |
+|---|---|---|
+| ConceptCard | ConceptCard.tsx | ✓ stub — tsc-clean |
+| ComparisonTable | ComparisonTable.tsx | ✓ stub — tsc-clean |
+| CommandRunner | CommandRunner.tsx | ✓ stub — tsc-clean |
+| GlossaryPop | GlossaryPop.tsx | ✓ stub — tsc-clean |
+| MiniQuiz | MiniQuiz.tsx | ✓ stub — tsc-clean |
+| DiagramPanel | DiagramPanel.tsx | ✓ stub — tsc-clean |
+
+Barrel: `app/frontend/components/learning/index.ts`
+Dependencias: shadcn/ui (Card, Table, Button, Badge, Accordion, Skeleton), mermaid (DiagramPanel — dynamic import con `useEffect`).
