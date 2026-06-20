@@ -1,0 +1,206 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Tipografía */
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-heading: var(--font-inter);
+
+  /* Tokens shadcn → Tailwind */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Brand — bg-brand, text-brand, border-brand */
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+
+  /* Terminal — para CommandRunner */
+  --color-terminal-bg: var(--terminal-bg);
+  --color-terminal-text: var(--terminal-text);
+  --color-terminal-cmd: var(--terminal-cmd);
+
+  /* Radii */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Charts */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ================================================================
+   LIGHT THEME — Docker Blue como primary, fondo limpio
+   ================================================================ */
+:root {
+  --radius: 0.5rem;
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.13 0.01 230);
+
+  --card: oklch(0.99 0 0);
+  --card-foreground: oklch(0.13 0.01 230);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.13 0.01 230);
+
+  /* PRIMARY = Docker Blue #2496ED */
+  --primary: oklch(0.60 0.17 222);
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.96 0.005 230);
+  --secondary-foreground: oklch(0.20 0.01 230);
+
+  --muted: oklch(0.96 0.005 230);
+  --muted-foreground: oklch(0.52 0.01 230);
+
+  --accent: oklch(0.94 0.04 220);
+  --accent-foreground: oklch(0.40 0.10 220);
+
+  --destructive: oklch(0.58 0.22 27);
+
+  --border: oklch(0.91 0.005 230);
+  --input: oklch(0.91 0.005 230);
+  --ring: oklch(0.60 0.17 222);
+
+  /* Brand tokens */
+  --brand: oklch(0.60 0.17 222);
+  --brand-foreground: oklch(0.99 0 0);
+
+  /* Terminal (CommandRunner) */
+  --terminal-bg: oklch(0.10 0.01 240);
+  --terminal-text: oklch(0.75 0.14 140);
+  --terminal-cmd: oklch(0.88 0.12 140);
+
+  /* Charts */
+  --chart-1: oklch(0.60 0.17 222);
+  --chart-2: oklch(0.52 0.15 260);
+  --chart-3: oklch(0.65 0.16 30);
+  --chart-4: oklch(0.55 0.18 320);
+  --chart-5: oklch(0.70 0.14 90);
+
+  /* Sidebar */
+  --sidebar: oklch(0.985 0.002 230);
+  --sidebar-foreground: oklch(0.13 0.01 230);
+  --sidebar-primary: oklch(0.60 0.17 222);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.94 0.04 220);
+  --sidebar-accent-foreground: oklch(0.40 0.10 220);
+  --sidebar-border: oklch(0.91 0.005 230);
+  --sidebar-ring: oklch(0.60 0.17 222);
+}
+
+/* ================================================================
+   DARK THEME — fondo navy profundo, Docker Blue brillante
+   Modo por defecto para la experiencia AR
+   ================================================================ */
+.dark {
+  --background: oklch(0.12 0.015 240);
+  --foreground: oklch(0.97 0 0);
+
+  --card: oklch(0.17 0.015 240);
+  --card-foreground: oklch(0.97 0 0);
+
+  --popover: oklch(0.17 0.015 240);
+  --popover-foreground: oklch(0.97 0 0);
+
+  /* PRIMARY = Docker Blue más brillante sobre fondo oscuro */
+  --primary: oklch(0.68 0.18 222);
+  --primary-foreground: oklch(0.12 0.015 240);
+
+  --secondary: oklch(0.22 0.015 240);
+  --secondary-foreground: oklch(0.97 0 0);
+
+  --muted: oklch(0.22 0.015 240);
+  --muted-foreground: oklch(0.63 0.008 240);
+
+  --accent: oklch(0.27 0.05 222);
+  --accent-foreground: oklch(0.82 0.12 222);
+
+  --destructive: oklch(0.70 0.19 22);
+
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.68 0.18 222);
+
+  --brand: oklch(0.68 0.18 222);
+  --brand-foreground: oklch(0.12 0.015 240);
+
+  --terminal-bg: oklch(0.07 0.008 240);
+  --terminal-text: oklch(0.78 0.15 140);
+  --terminal-cmd: oklch(0.90 0.13 140);
+
+  --chart-1: oklch(0.68 0.18 222);
+  --chart-2: oklch(0.62 0.16 260);
+  --chart-3: oklch(0.75 0.17 30);
+  --chart-4: oklch(0.70 0.18 320);
+  --chart-5: oklch(0.80 0.15 90);
+
+  --sidebar: oklch(0.14 0.015 240);
+  --sidebar-foreground: oklch(0.97 0 0);
+  --sidebar-primary: oklch(0.68 0.18 222);
+  --sidebar-primary-foreground: oklch(0.12 0.015 240);
+  --sidebar-accent: oklch(0.27 0.05 222);
+  --sidebar-accent-foreground: oklch(0.82 0.12 222);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.68 0.18 222);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .h1 { font-size: 2.25rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.01em; }
+  .h2 { font-size: 1.75rem; font-weight: 700; line-height: 1.3; letter-spacing: -0.005em; }
+  .h3 { font-size: 1.375rem; font-weight: 600; line-height: 1.4; }
+  .h4 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; }
+  .body { font-size: 1rem; font-weight: 400; line-height: 1.6; }
+  .small { font-size: 0.875rem; font-weight: 500; line-height: 1.5; }
+  .xs { font-size: 0.75rem; font-weight: 400; line-height: 1.4; }
+}
