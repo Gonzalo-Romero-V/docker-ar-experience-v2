@@ -3,7 +3,7 @@ status: stable
 type: domain
 layer: H2
 created: 2026-06-20
-code_path: "app/servicios/shared/src/envelope.ts"
+code_path: "packages/shared/src/envelope.ts"
 ---
 
 # Contrato LLM → UI — Docker AR Tutor

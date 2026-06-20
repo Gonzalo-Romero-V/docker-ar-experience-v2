@@ -3,7 +3,7 @@ status: stable
 type: domain
 layer: H2
 created: 2026-06-20
-code_path: app/servicios/rag/
+code_path: app/services/rag/
 ---
 
 # RAG Pipeline — Docker AR Tutor

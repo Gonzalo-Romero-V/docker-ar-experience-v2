@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@shared/*": ["../../../packages/shared/src/*"],
+      "@rag/*": ["../rag/*"]
+    }
+  },
+  "include": ["./**/*.ts", "../rag/**/*.ts", "../../../packages/shared/src/**/*.ts"]
+}

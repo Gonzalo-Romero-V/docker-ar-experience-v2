@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@shared/*": ["../../packages/shared/src/*"],
+      "@rag/*": ["../services/rag/*"],
+      "@llm/*": ["../services/llm/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "../services/rag/**/*",
+    "../services/llm/**/*",
+    "../../packages/shared/src/**/*"
+  ]
+}

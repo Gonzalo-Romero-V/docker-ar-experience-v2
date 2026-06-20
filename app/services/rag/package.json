@@ -1,0 +1,19 @@
+{
+  "name": "@docker-ar/rag",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "openai": "^4.77.0",
+    "pg": "^8.13.3",
+    "zod": "^3.23.0",
+    "minimatch": "^10.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "tsx": "^4.19.2",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.10",
+    "vitest": "^2.1.9"
+  }
+}

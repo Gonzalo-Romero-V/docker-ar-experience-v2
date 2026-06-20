@@ -14,10 +14,15 @@
       "app/frontend/next.config.*",
       "app/frontend/tailwind.config.*",
       "app/frontend/components.json",
+      "app/backend/package.json",
+      "app/backend/tsconfig.json",
       "app/services/*/package.json",
+      "app/services/*/tsconfig.json",
       "packages/shared/package.json",
+      "packages/shared/tsconfig.json",
       "package.json",
       "docker-compose*.yml",
+      "infra/**",
       "Dockerfile*",
       ".gitignore"
     ],
@@ -30,10 +35,10 @@
       "app/frontend/types/**",
       "app/frontend/app/**/layout.tsx",
       "packages/shared/src/**",
-      "app/services/*/src/routes/**",
-      "app/services/*/src/schemas/**",
-      "app/services/*/src/types/**",
-      "app/services/*/src/plugins/**"
+      "app/backend/src/routes/**",
+      "app/backend/src/plugins/**",
+      "app/services/rag/types.ts",
+      "app/services/rag/config.ts"
     ],
     "H5_implementation": [
       "app/frontend/app/**/page.tsx",
@@ -42,9 +47,9 @@
       "app/frontend/components/ar/**",
       "app/frontend/components/learning/**",
       "app/frontend/components/custom/**",
-      "app/services/*/src/handlers/**",
-      "app/services/*/src/services/**",
-      "app/services/*/src/lib/**"
+      "app/backend/src/index.ts",
+      "app/services/rag/**",
+      "app/services/llm/**"
     ],
     "ENV_references": [
       ".env",
@@ -85,8 +90,14 @@
       "app/frontend/lib/**",
       "app/frontend/hooks/**"
     ],
+    "Backend": [
+      "app/backend/src/**"
+    ],
     "RAGService": [
-      "app/services/rag-service/src/**"
+      "app/services/rag/**"
+    ],
+    "LLMService": [
+      "app/services/llm/**"
     ]
   },
 

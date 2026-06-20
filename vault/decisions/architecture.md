@@ -12,13 +12,14 @@ created: 2026-06-20
 ```
 docker_ar_experience_v2/
 ├── app/
-│   ├── frontend/              ← Next.js 15 (UI web + AR client)
+│   ├── frontend/              ← Next.js 16 (UI web + AR client)
 │   ├── backend/               ← Fastify HTTP server (routes, plugins, lifecycle)
-│   └── servicios/
+│   └── services/
 │       ├── rag/               ← retrieval: hybrid search, confidence, cache, ingest
 │       ├── llm/               ← LLM: prompt, composition, orchestrate, openai client
-│       ├── shared/            ← Zod schemas + tipos TS (SceneItem, ResponseEnvelope)
 │       └── ar/                ← deferred (no hay AR server-side en MVP)
+├── packages/
+│   └── shared/                ← Zod schemas + tipos TS (SceneItem, ResponseEnvelope)
 ├── infra/
 │   ├── docker-compose.yml
 │   └── postgres/
@@ -32,10 +33,11 @@ docker_ar_experience_v2/
 ```
 
 **Notas de estructura:**
-- No hay `packages/` — los tipos compartidos viven en `app/servicios/shared/`
-- El frontend importa desde shared via TypeScript path alias: `@shared/*` → `../../servicios/shared/src/*`
-- El backend importa desde rag y llm via alias: `@rag/*`, `@llm/*`
-- `app/servicios/ar/` es un placeholder para funcionalidad server-side AR futura (post-MVP)
+- `packages/shared/` contiene los tipos compartidos — Zod schemas y tipos TS compartidos entre frontend y backend
+- El frontend importa desde shared via TypeScript path alias: `@shared/*` → `../../packages/shared/src/*`
+- El backend importa desde rag y llm via alias: `@rag/*` → `../services/rag/*`, `@llm/*` → `../services/llm/*`
+- El backend importa desde shared via alias: `@shared/*` → `../../packages/shared/src/*`
+- `app/services/ar/` es un placeholder para funcionalidad server-side AR futura (post-MVP)
 
 ## Separación de responsabilidades
 
@@ -97,33 +99,36 @@ app/backend/src/
   index.ts         ← bootstrap: register plugins → register routes → listen
 ```
 
-### Servicios: responsabilidades (app/servicios)
+### Servicios: responsabilidades (app/services)
 
 Los servicios son módulos de lógica pura — sin dependencia directa de Fastify. Se importan desde el backend.
 
-**`app/servicios/rag/`**
+**`app/services/rag/`**
 ```
-hybrid.ts          ← búsqueda RRF (BM25 + vector via pgvector)
-confidence.ts      ← scoring: grounded / weak / out_of_scope
-cache.ts           ← cache de respuestas en PostgreSQL
-ingest.ts          ← pipeline: clone → parse → chunk → embed → load
-embed.ts           ← embeddings via OpenAI API
-```
-
-**`app/servicios/llm/`**
-```
-orchestrate.ts     ← orquestación principal: prompt → OpenAI → parse → validate
-prompt.ts          ← system prompt + buildUserPrompt(chunks)
-composition.ts     ← normalizeComposition: dedup, order, cap 5
-openai.ts          ← cliente OpenAI con retry (rate limit 429)
+hybrid.ts       ← búsqueda RRF (BM25 + vector via pgvector)
+confidence.ts   ← scoring: grounded / weak / out_of_scope
+cache.ts        ← cache de respuestas en PostgreSQL
+chunk.ts        ← split por headings + max-token guard
+parse.ts        ← walk markdown files + filtros
+embed.ts        ← embeddings via OpenAI API
+ingest.ts       ← pipeline: parse → chunk → embed → store
+config.ts       ← KB_CONFIG
+types.ts        ← Chunk, RetrievedChunk, ConfidenceLevel, KBConfig
 ```
 
-**`app/servicios/shared/`**
+**`app/services/llm/`**
 ```
-src/
-  components.ts    ← SceneItemSchema (discriminated union, catálogo activo)
-  envelope.ts      ← ResponseEnvelopeSchema
-  index.ts         ← re-exports
+orchestrate.ts  ← orquestación principal: prompt → OpenAI → parse → validate
+prompt.ts       ← system prompt + buildUserPrompt(chunks)
+composition.ts  ← normalizeComposition: dedup, order, cap 5
+openai.ts       ← OpenAIProvider con retry (rate limit 429)
+```
+
+**`packages/shared/src/`**
+```
+components.ts   ← SceneItemSchema (discriminated union, catálogo activo)
+envelope.ts     ← ResponseEnvelopeSchema
+index.ts        ← re-exports
 ```
 
 Endpoints MVP:
@@ -133,7 +138,7 @@ Endpoints MVP:
 
 ### Contrato LLM → UI (invariante crítico)
 
-El LLM produce un `ResponseEnvelope` (schema Zod en `app/servicios/shared`). Ver detalle completo en `domain/llm-response-contract.md`.
+El LLM produce un `ResponseEnvelope` (schema Zod en `packages/shared/src`). Ver detalle completo en `domain/llm-response-contract.md`.
 
 El LLM **nunca** decide posición, escala, rotación ni distribución espacial en AR.
 
