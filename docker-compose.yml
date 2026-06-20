@@ -19,23 +19,20 @@ services:
 
   backend:
     build:
-      context: ./app/backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: app/backend/Dockerfile
     container_name: docker_ar_v2_backend
     environment:
       PORT: 3000
       DATABASE_URL: postgresql://docker_ar:docker_ar_dev@db:5432/docker_ar_v2
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       INGEST_SECRET: ${INGEST_SECRET}
-      NODE_ENV: development
+      NODE_ENV: production
     ports:
       - "3000:3000"
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - ./app/backend:/app
-      - /app/node_modules
 
   frontend:
     build:
@@ -48,10 +45,6 @@ services:
       - "3001:3000"
     depends_on:
       - backend
-    volumes:
-      - ./app/frontend:/app
-      - /app/node_modules
-      - /app/.next
 
 volumes:
   pgdata_v2:
