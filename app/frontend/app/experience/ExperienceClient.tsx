@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import type * as THREE from 'three';
 import { ARShell } from '@/components/ar/ARShell';
-import { SpatialBoard } from '@/components/ar/SpatialBoard';
+import type { AcquisitionContext } from '@/components/ar/ARShell';
+import { ExplorationSphere } from '@/components/ar/ExplorationSphere';
+import { useBeltCalibration } from '@/components/ar/hooks/useBeltCalibration';
 import {
   ConceptCard,
   ComparisonTable,
@@ -92,6 +95,8 @@ export default function ExperienceClient() {
   const router = useRouter();
   const [response, setResponse] = useState<ArResponse | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [acquisitionCtx, setAcquisitionCtx] = useState<AcquisitionContext | null>(null);
+  const { theta0, updateFromAnchor } = useBeltCalibration();
 
   useEffect(() => {
     const raw = sessionStorage.getItem('ar_response');
@@ -105,6 +110,23 @@ export default function ExperienceClient() {
       setLoadError(true);
     }
   }, []);
+
+  // On first acquisition: set theta0 immediately so panels mount at the correct angle
+  // (avoids a visible jump from θ=0 to the real target direction).
+  const handleAcquired = useCallback(
+    (ctx: AcquisitionContext) => {
+      updateFromAnchor(ctx.anchorPosition);
+      setAcquisitionCtx(ctx);
+    },
+    [updateFromAnchor],
+  );
+
+  const handleTargetUpdate = useCallback(
+    (position: THREE.Vector3, visible: boolean) => {
+      if (visible) updateFromAnchor(position);
+    },
+    [updateFromAnchor],
+  );
 
   if (loadError) {
     return (
@@ -132,7 +154,7 @@ export default function ExperienceClient() {
 
   return (
     <div className="relative h-dvh w-full bg-black">
-      {/* Summary bar — shown as DOM overlay (not in AR space) */}
+      {/* Summary bar — DOM overlay above AR scene */}
       <div className="absolute inset-x-0 top-0 z-20 border-b border-white/10 bg-black/70 px-4 py-2 backdrop-blur-sm">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs text-white/70 line-clamp-2">{response.answer_summary}</p>
@@ -152,10 +174,31 @@ export default function ExperienceClient() {
         )}
       </div>
 
-      {/* AR Experience — ARShell needs the compiled .mind target in /public */}
-      <ARShell imageSrc="/targets/docker-target.mind">
-        {(scene) => <SpatialBoard scene={scene} panels={panels} />}
+      {/* AR Shell: MindAR init + video feed + anchor polling */}
+      <ARShell
+        imageSrc="/targets/docker-target.mind"
+        onAcquired={handleAcquired}
+        onTargetUpdate={handleTargetUpdate}
+      >
+        {/* Scanning indicator — only until first acquisition */}
+        {!acquisitionCtx && (
+          <div className="absolute inset-x-0 bottom-12 z-10 text-center text-sm text-white/80">
+            Apuntá la cámara al QR de Docker 🎯
+          </div>
+        )}
       </ARShell>
+
+      {/* Exploration sphere: mounts after first target acquisition */}
+      {acquisitionCtx && (
+        <ExplorationSphere
+          camera={acquisitionCtx.camera}
+          cssRenderer={acquisitionCtx.cssRenderer}
+          panels={panels}
+          theta0={theta0}
+          radius={0.8}
+          arcAngleDeg={270}
+        />
+      )}
     </div>
   );
 }

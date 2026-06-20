@@ -2,33 +2,33 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import type * as THREE from 'three';
+import type { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 
-type ARStatus = 'idle' | 'loading' | 'tracking' | 'error';
-
-interface ARShellProps {
-  /** Path to the compiled .mind image target (e.g. /targets/docker.mind) */
-  imageSrc: string;
-  /** Content to show in overview while AR is loading */
-  loadingSlot?: ReactNode;
-  /** Rendered inside the AR scene once tracking starts — receives the THREE.Scene */
-  children: (scene: import('three').Scene) => ReactNode;
+export interface AcquisitionContext {
+  camera: THREE.PerspectiveCamera;
+  cssRenderer: CSS3DRenderer;
+  anchorPosition: THREE.Vector3;
 }
 
-/**
- * Initializes MindAR + CSS3DRenderer, runs the AR loop, and exposes the THREE.Scene
- * to children via render prop. All AR lib imports are dynamic (SSR-safe).
- *
- * Stacking (see vault/domain/ar-system.md):
- *   container (position:relative)
- *   ├── <video>  (z-index 0, MindAR camera feed)
- *   ├── <canvas> (z-index 1, WebGL Three.js)
- *   └── <div>    (z-index 2, CSS3DRenderer — pointer-events:none)
- *        └── panels (pointer-events:auto individually)
- */
-export function ARShell({ imageSrc, loadingSlot, children }: ARShellProps) {
+type ARStatus = 'idle' | 'loading' | 'scanning' | 'acquired' | 'error';
+
+interface ARShellProps {
+  imageSrc: string;
+  onAcquired: (ctx: AcquisitionContext) => void;
+  onTargetUpdate?: (position: THREE.Vector3, visible: boolean) => void;
+  children?: ReactNode;
+}
+
+export function ARShell({ imageSrc, onAcquired, onTargetUpdate, children }: ARShellProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [arStatus, setArStatus] = useState<ARStatus>('idle');
-  const [scene, setScene] = useState<import('three').Scene | null>(null);
+
+  // Stable callback refs — updated every render, never stale in the animation loop
+  const onAcquiredRef = useRef(onAcquired);
+  const onTargetUpdateRef = useRef(onTargetUpdate);
+  useEffect(() => { onAcquiredRef.current = onAcquired; });
+  useEffect(() => { onTargetUpdateRef.current = onTargetUpdate; });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -37,14 +37,18 @@ export function ARShell({ imageSrc, loadingSlot, children }: ARShellProps) {
     let active = true;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let mindarInstance: any = null;
+    // Mutable anchor ref — available to the animation loop after addAnchor() resolves
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anchorRef: { current: any } = { current: null };
 
     setArStatus('loading');
 
-    (async () => {
+    void (async () => {
       try {
-        const [{ MindARThree }, { CSS3DRenderer }] = await Promise.all([
+        const [{ MindARThree }, { CSS3DRenderer }, THREE] = await Promise.all([
           import('mind-ar/dist/mindar-image-three.prod.js'),
           import('three/addons/renderers/CSS3DRenderer.js'),
+          import('three'),
         ]);
 
         if (!active) return;
@@ -57,18 +61,23 @@ export function ARShell({ imageSrc, loadingSlot, children }: ARShellProps) {
           uiError: 'no',
         });
 
-        const { renderer, scene: arScene, camera } = mindarInstance;
+        const { renderer, camera } = mindarInstance;
 
-        // CSS3DRenderer shares the same camera — overlaid on the WebGL canvas
         const cssRenderer = new CSS3DRenderer();
         cssRenderer.setSize(container.offsetWidth, container.offsetHeight);
         cssRenderer.domElement.style.cssText =
           'position:absolute;top:0;left:0;pointer-events:none;z-index:2;';
         container.appendChild(cssRenderer.domElement);
 
-        // Hook CSS render into MindAR's animation loop
+        // Animation loop: relay anchor position for belt calibration.
+        // CSS3D rendering is owned by ExplorationSphere (its own RAF).
         renderer.setAnimationLoop(() => {
-          cssRenderer.render(arScene, camera);
+          if (anchorRef.current) {
+            onTargetUpdateRef.current?.(
+              anchorRef.current.group.position.clone(),
+              anchorRef.current.group.visible,
+            );
+          }
         });
 
         await mindarInstance.start();
@@ -79,12 +88,24 @@ export function ARShell({ imageSrc, loadingSlot, children }: ARShellProps) {
           return;
         }
 
-        // Anchor 0 — first (and only) image target
-        const anchor = mindarInstance.addAnchor(0);
-        anchor.group.add(new (await import('three')).Object3D()); // keep anchor active
+        setArStatus('scanning');
 
-        setScene(arScene);
-        setArStatus('tracking');
+        const anchor = mindarInstance.addAnchor(0);
+        anchor.group.add(new THREE.Object3D());
+        anchorRef.current = anchor;
+
+        let acquired = false;
+        anchor.onTargetFound = () => {
+          if (!acquired) {
+            acquired = true;
+            setArStatus('acquired');
+            onAcquiredRef.current({
+              camera,
+              cssRenderer,
+              anchorPosition: anchor.group.position.clone(),
+            });
+          }
+        };
       } catch (err) {
         if (active) {
           console.error('[ARShell] init failed', err);
@@ -98,26 +119,20 @@ export function ARShell({ imageSrc, loadingSlot, children }: ARShellProps) {
       if (mindarInstance) {
         mindarInstance.stop().catch(() => {});
       }
-      setScene(null);
       setArStatus('idle');
     };
   }, [imageSrc]);
 
   return (
     <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-black">
-      {/* Loading overlay */}
       {arStatus === 'loading' && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80">
-          {loadingSlot ?? (
-            <div className="flex flex-col items-center gap-3 text-white">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              <p className="text-sm">Iniciando cámara...</p>
-            </div>
-          )}
+          <div className="flex flex-col items-center gap-3 text-white">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            <p className="text-sm">Iniciando cámara...</p>
+          </div>
         </div>
       )}
-
-      {/* Error state */}
       {arStatus === 'error' && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/90 p-8 text-center text-white">
           <div className="space-y-2">
@@ -128,16 +143,7 @@ export function ARShell({ imageSrc, loadingSlot, children }: ARShellProps) {
           </div>
         </div>
       )}
-
-      {/* Scanning hint */}
-      {arStatus === 'tracking' && !scene && (
-        <div className="absolute inset-x-0 bottom-12 z-10 text-center text-sm text-white/80">
-          Apuntá la cámara al image target 🎯
-        </div>
-      )}
-
-      {/* AR content — only when scene is ready */}
-      {scene && children(scene)}
+      {children}
     </div>
   );
 }

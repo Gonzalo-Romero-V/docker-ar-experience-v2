@@ -36,3 +36,37 @@ export function computeRadialPositions(
 export function computePanelRotation(position: THREE.Vector3): number {
   return Math.atan2(position.x, position.z);
 }
+
+/**
+ * Distributes N panels in a full belt (or arc) around the CAMERA origin.
+ * theta0 = angle (rad) of panel 0 — set to atan2(target.x, target.z) so the first
+ * panel points toward the QR target.
+ * arcAngleDeg = 360 for a full ring; 270 to leave the back sector empty.
+ */
+export function computeBeltPositions(
+  count: number,
+  radius: number,
+  theta0: number = 0,
+  arcAngleDeg: number = 360,
+): THREE.Vector3[] {
+  if (count === 0) return [];
+  const arcRad = (arcAngleDeg * Math.PI) / 180;
+  const startTheta = theta0 - arcRad / 2;
+  return Array.from({ length: count }, (_, i) => {
+    const theta =
+      count === 1 ? theta0 : startTheta + (i / (count - 1)) * arcRad;
+    return new THREE.Vector3(
+      radius * Math.sin(theta),
+      0,
+      radius * Math.cos(theta),
+    );
+  });
+}
+
+/**
+ * Inward-facing rotation for a belt panel: panel face points toward the origin (camera).
+ * Equivalent to computePanelRotation(position) + π.
+ */
+export function computeBeltPanelRotationY(position: THREE.Vector3): number {
+  return Math.atan2(position.x, position.z) + Math.PI;
+}

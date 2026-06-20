@@ -247,3 +247,18 @@ turbopack: {
   }
 }
 ```
+
+## Nota de rama — feat/3dof-exploration
+En la rama `feat/3dof-exploration`, la distribución radial (Board Radial) y el
+anchor tracking continuo están siendo **reemplazados** por `ExplorationSphere`
++ DeviceOrientationEvent. Ver [[ar-exploration]] para la decisión completa,
+la matemática del cinturón 3DoF y el flujo de estados.
+
+Esta nota sigue siendo válida para `main` (enfoque CSS anchor).
+En `feat/3dof-exploration`, las secciones "Board espacial" y "Focus system"
+aún aplican a los componentes pedagógicos pero **no** al sistema de posicionamiento AR.
+
+Componentes nuevos en esta rama:
+- `ExplorationSphere.tsx` — cinturón 3DoF (reemplaza SpatialBoard para AR)
+- `hooks/useDeviceOrientation.ts` — sensor hook
+- `hooks/useBeltCalibration.ts` — gestión de θ₀

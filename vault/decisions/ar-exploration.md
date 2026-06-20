@@ -188,3 +188,25 @@ el tracker y exponga `anchor.group.position` (que leemos cada frame).
 - HTTPS / mkcert — igual.
 - `stubs/three-compat.js` y `stubs/node-fetch.js` — igual.
 - El `.mind` target compilado — igual.
+
+## Escenario de uso confirmado
+**Confirmado 2026-06-20.**
+
+El estudiante está sentado. La exploración es girando el teléfono, no caminando
+físicamente alrededor de la instalación.
+
+Por tanto:
+- **3DoF es suficiente** — DeviceOrientationEvent ancla al mundo gravitacional
+  (no métrico), lo cual se percibe como "real" para uso estático.
+- **WebXR 6DoF no es necesario ahora** — solo si en el futuro surge el requisito
+  de caminar alrededor del contenido con anclaje métrico real (ARCore SLAM).
+- **El QR** sirve para orientación inicial (θ₀) y re-calibración. No es el foco
+  de la experiencia; el foco es el cinturón de contenido.
+
+### Posible evolución futura (no planificada)
+
+Si el requisito cambia a "estudiante camina alrededor de la instalación":
+- Stack: WebXR `immersive-ar` + ARCore hit-test para placement
+- CSS3DRenderer requeriría sync manual con la cámara WebXR cada frame
+- iOS no soporta `immersive-ar` en Safari sin app nativa
+- Ver evaluación completa de alternativas en la tabla de descartados arriba
