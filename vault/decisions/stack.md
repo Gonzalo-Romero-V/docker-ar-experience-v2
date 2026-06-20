@@ -87,3 +87,18 @@ turbopack: {
 - **Type check**: `tsc --noEmit` en CI
 - **Orquestación agentes**: Claude Code (arquitecto) + Codex CLI (implementador de tareas delegadas)
 - **Graphify**: activar post-scaffolds cuando haya código real para extraer call graphs
+
+## Graphify activado (2026-06-20)
+Extractor activo: **`graphify`** (cambiado de `generic`).
+
+Grafo AST generado con `graphify update . --no-cluster --force`:
+- **834 nodos** | **2498 aristas** | **95 archivos con call_graph**
+- Extracción: Pass 1 AST únicamente (tree-sitter, sin LLM, sin red)
+- Output: `graphify-out/graph.json` (en `.gitignore` — artefacto local)
+
+Post-commit hook actualizado: corre `graphify update . --no-cluster --force` automáticamente antes de `vault_sync.py report`, manteniendo el grafo sincronizado con cada commit.
+
+Para regenerar manualmente (ej: tras `git clone` o reset):
+```bash
+graphify update . --no-cluster --force
+```

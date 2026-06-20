@@ -28,9 +28,9 @@ status: locked
 > Entidades de dominio, sus estados, sus reglas, sus relaciones.
 
 - [[ar-system]] — sistema AR: capas WebGL/CSS3D, integración MindAR+CSS3DRenderer, board espacial, focus system, constraints iOS
-- [[rag-pipeline]] — pipeline RAG: ingestión, chunking, retrieval, orquestación LLM _(crear)_
-- [[llm-response-contract]] — contrato JSON LLM → componentes UI: catálogo, schema Zod _(crear)_
-- [[component-catalog]] — catálogo de componentes pedagógicos: props, variantes, ejemplos _(crear)_
+- [[rag-pipeline]] — pipeline RAG: ingestión, chunking, retrieval, orquestación LLM
+- [[llm-response-contract]] — contrato JSON LLM → componentes UI: catálogo, schema Zod
+- [[component-catalog]] — catálogo de componentes pedagógicos: props, variantes, ejemplos
 
 ---
 
@@ -40,6 +40,7 @@ status: locked
 
 - [[stack]] — tecnologías elegidas por capa (frontend, AR, RAG service, shared)
 - [[architecture]] — monorepo, capas, separación WebGL/CSS3D, board radial, convenciones
+- [[database]] — PostgreSQL docker_ar_v2: schema, tablas, índices, docker-compose
 - [[api-contracts]] — contratos de endpoints RAG service _(crear cuando se defina el primer endpoint)_
 
 ---
