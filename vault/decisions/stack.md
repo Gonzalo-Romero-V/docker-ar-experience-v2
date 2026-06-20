@@ -10,7 +10,7 @@ created: 2026-06-20
 ## Stack elegido
 
 ### Frontend
-- **Next.js 15** (App Router) + **TypeScript 5**
+- **Next.js 16** (App Router, Turbopack) + **TypeScript 5**
 - **Tailwind CSS 4** + design tokens en `globals.css`
 - **shadcn/ui** + **Radix UI** como base de componentes
 - **Zod** para validación de contratos (especialmente el contrato LLM → componentes)
@@ -29,7 +29,7 @@ created: 2026-06-20
 - **OpenAI** (LLM para respuestas + embeddings para indexación)
 
 ### Shared
-- Paquete `packages/shared` con tipos TypeScript y schemas Zod compartidos entre frontend y RAG service
+- Módulo `app/servicios/shared/src/` con tipos TypeScript y schemas Zod compartidos entre frontend y RAG service
 
 ### Monorepo
 - Sin turbo/nx por ahora — estructura simple de carpetas bajo `app/`
@@ -61,6 +61,22 @@ created: 2026-06-20
 - **GSAP anima propiedades de CSS3DObject**, no estilos DOM directos cuando el objeto está en escena AR. Hay que animar el objeto Three.js, no el elemento HTML subyacente directamente.
 - **pgvector requiere extensión activa en PostgreSQL**. El setup de la DB incluye `CREATE EXTENSION IF NOT EXISTS vector`.
 - **OpenAI embeddings: modelo `text-embedding-3-small`** como default de v1. Cambiar el modelo de embeddings requiere re-indexar toda la base vectorial.
+
+## Compatibilidad MindAR + Three.js (workaround documentado)
+
+MindAR requiere constantes legacy de Three.js (`sRGBEncoding`, `LinearEncoding`) removidas en r152.
+Solución aplicada en `app/frontend/next.config.ts`:
+
+```ts
+turbopack: {
+  resolveAlias: {
+    three: "./stubs/three-compat.js",  // re-export three + constantes legacy
+    fs:    "./stubs/empty.js",         // shim vacío — MindAR intenta importar fs en browser
+  }
+}
+```
+
+**Regla**: no tocar estos aliases ni stubs salvo error real documentado con número de issue o referencia concreta.
 
 ## Herramientas de desarrollo
 
