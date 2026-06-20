@@ -27,7 +27,7 @@ status: locked
 
 > Entidades de dominio, sus estados, sus reglas, sus relaciones.
 
-- [[ar-system]] — sistema AR: capas WebGL/CSS3D, board espacial, focus system _(crear)_
+- [[ar-system]] — sistema AR: capas WebGL/CSS3D, integración MindAR+CSS3DRenderer, board espacial, focus system, constraints iOS
 - [[rag-pipeline]] — pipeline RAG: ingestión, chunking, retrieval, orquestación LLM _(crear)_
 - [[llm-response-contract]] — contrato JSON LLM → componentes UI: catálogo, schema Zod _(crear)_
 - [[component-catalog]] — catálogo de componentes pedagógicos: props, variantes, ejemplos _(crear)_

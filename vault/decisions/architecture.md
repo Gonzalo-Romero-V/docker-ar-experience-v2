@@ -166,6 +166,20 @@ Las animaciones de focus/unfocus son responsabilidad de GSAP, no de React state 
 - **Frontend AR**: errores de MindAR → mostrar mensaje "Target no detectado" en la UI web (no en AR). Errores de fetch al RAG service → toast de error con posibilidad de reintentar.
 - **Contrato LLM**: si el JSON de respuesta no valida el schema Zod → log del error + respuesta fallback con `ConceptCard` genérico. Nunca romper la experiencia AR por un schema inválido.
 
+## Integración AR: constraints confirmados por investigación (2026-06-20)
+
+Ver detalle completo en `domain/ar-system.md`. Resumen ejecutivo para referencias rápidas:
+
+- **CSS3DRenderer** es el approach correcto. CanvasTexture está descartado.
+- **`createPortal`** (no `createRoot`) para montar React en CSS3DObjects.
+- **CSS3DObject.scale.setScalar()** es obligatorio — escala default es 1px = 1 unidad.
+- **Oclusión imposible**: panels siempre sobre WebGL. Constraint de diseño aceptado.
+- **No backdrop-filter en iOS** Safari. Diseño sin blur de fondo.
+- **GSAP anima propiedades Three.js**, no CSS directo.
+- **No usar WebXR AR**: MindAR funciona en iOS porque usa `getUserMedia`, no WebXR.
+- **Three.js version**: pinear al peer dep de MindAR. Necesita stub `three-compat.js` para `sRGBEncoding`.
+- **No R3F en la escena AR principal**: MindAR y R3F crean renderers propios — conflictan. R3F solo para escena fallback/preview.
+
 ## Decisiones pendientes
 
 - [ ] **Cache de respuestas RAG**: ¿cache por hash de pregunta normalizada o sin cache en v1?
@@ -173,3 +187,5 @@ Las animaciones de focus/unfocus son responsabilidad de GSAP, no de React state 
 - [ ] **WebSocket vs polling**: ¿streaming de respuesta RAG al frontend o esperar respuesta completa?
 - [ ] **Graphify**: activar post-scaffolds para extraer call graph del RAG service y verificar separación de capas.
 - [ ] **Splash screen / onboarding AR**: ¿guía visual de "apuntá la cámara al target" en v1?
+- [ ] **Calibración de escala CSS3DObject**: determinar `SCALE_FACTOR` en dispositivo real (referencia v1: 37.7 px = 1 metro a scale 1).
+- [ ] **Radio y ángulo del arco radial**: calibrar `radius` y `arcAngleDeg` en dispositivo físico.
