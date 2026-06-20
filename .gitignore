@@ -20,6 +20,7 @@ dist/
 .env
 .env.local
 .env.*.local
+app/docs/mkcert-rootCA.pem
 
 # Allowed: example env files (sí se commitean)
 !.env.example
