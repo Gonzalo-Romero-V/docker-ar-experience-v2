@@ -1,0 +1,12 @@
+# Carpeta `raw/` del vault — material de soporte sin estructura formal
+
+Aquí van los documentos fuente que vas a ingerir al grafo:
+- PDFs de requisitos, especificaciones, papers
+- Imágenes, screenshots, diagramas
+- Notas de reunión sueltas, transcripts, etc.
+
+El comando `/ingest <ruta>` lee estos archivos y propone notas estructuradas en
+`intent/`, `domain/` o `decisions/`. Los archivos en `raw/` quedan como
+referencia; el valor semántico se mueve a notas tipadas.
+
+Este archivo `.gitkeep` solo existe para que la carpeta sobreviva al `git init`.

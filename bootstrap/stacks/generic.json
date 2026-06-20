@@ -1,0 +1,88 @@
+{
+  "_doc": "Stack archetype: fallback genérico. Sirve para arrancar rápido en cualquier proyecto.",
+  "_doc_behavior": "El extractor 'generic' detecta el stack por signal files y, si encuentra uno sin archetype, genera propuestas en bootstrap/stacks/_proposed_<stack>.json y scripts/lib/extractors/_proposed_<stack>.py para que el humano las promueva al catálogo.",
+  "_doc_casing": "lowercase (convención Unix/genérica).",
+  "schema_version": "1.0",
+  "project_name": "__PROJECT_NAME__",
+  "vault_path": "__VAULT_ABSOLUTE_PATH__",
+  "extractor": "generic",
+
+  "hierarchy_mapping": {
+    "H1_intent": ["vault/intent/**"],
+    "H2_requirements": ["vault/domain/**", "vault/raw/**"],
+    "H3_architecture": [
+      "vault/decisions/**",
+      "package.json",
+      "pyproject.toml",
+      "Cargo.toml",
+      "go.mod",
+      "pom.xml",
+      "build.gradle",
+      "Gemfile",
+      "composer.json",
+      "angular.json",
+      "Dockerfile",
+      "docker-compose*.yml",
+      ".gitignore",
+      ".gitattributes"
+    ],
+    "H4_contracts": [
+      "src/**/models/**",
+      "src/**/types/**",
+      "src/**/schemas/**",
+      "src/**/entities/**",
+      "internal/**/types/**",
+      "internal/**/models/**",
+      "app/**/models/**",
+      "app/**/schemas/**",
+      "**/*.proto",
+      "migrations/**",
+      "db/migrations/**"
+    ],
+    "H5_implementation": [
+      "src/**/services/**",
+      "src/**/controllers/**",
+      "src/**/handlers/**",
+      "src/**/components/**",
+      "internal/**/handlers/**",
+      "cmd/**",
+      "app/**/services/**",
+      "app/**/api/**"
+    ],
+    "ENV_references": [".env", ".env.example", ".env.local", ".env.production"]
+  },
+
+  "exclude_patterns": [
+    "**/node_modules/**",
+    "**/vendor/**",
+    "**/__pycache__/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/target/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/.next/**",
+    "**/.gradle/**",
+    "**/*.lock",
+    "**/*-lock.json",
+    "**/*.log",
+    "**/graphify-out/**",
+    "bootstrap/init_vault.py",
+    "bootstrap/stacks/**",
+    "bootstrap/vault-skeleton/**",
+    "scripts/vault_sync.py",
+    "scripts/lib/**",
+    "hooks/post-commit",
+    "CHANGELOG.md"
+  ],
+
+  "env_scan_scope": ["src/**", "app/**", "internal/**", "cmd/**", "lib/**", "pkg/**"],
+
+  "vault_protected_status": ["locked"],
+
+  "report_size_limits": {
+    "max_files": 100,
+    "max_diff_chars_per_file": 500,
+    "split_threshold_files": 30
+  }
+}

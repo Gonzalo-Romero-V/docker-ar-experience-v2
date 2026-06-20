@@ -1,0 +1,96 @@
+{
+  "_doc": "Stack archetype: Python ML / Ciencia de Datos. Proyectos con pipeline por etapas (01_, 02_, ...), notebooks, datasets y modelos. Sin framework web.",
+  "_doc_status": "Definido para los ejercicios academicos de ML (supervisado, no supervisado, refuerzo, profundo). Usa el extractor 'generic' (baseline file/import/env). Un extractor dedicado ML (parseo de modelos, experimentos, metricas) puede agregarse luego al catalogo si se necesita.",
+  "_doc_casing": "lowercase — convencion Python.",
+  "_doc_layers": "H4 = contratos estables (config de experimento, schemas de datos, definicion de modelos). H5 = implementacion del pipeline (etapas, src, notebooks, main.py). detect_layer evalua H4 antes que H5, asi un pipeline/.../config.py cae en H4 y el resto del pipeline en H5.",
+  "schema_version": "1.0",
+  "project_name": "__PROJECT_NAME__",
+  "vault_path": "__VAULT_ABSOLUTE_PATH__",
+  "extractor": "generic",
+
+  "hierarchy_mapping": {
+    "H1_intent": ["vault/intent/**"],
+    "H2_requirements": ["vault/domain/**", "vault/raw/**"],
+    "H3_architecture": [
+      "vault/decisions/**",
+      "requirements.txt",
+      "requirements*.txt",
+      "pyproject.toml",
+      "environment.yml",
+      "params.yaml",
+      "dvc.yaml",
+      "Dockerfile",
+      "docker-compose*.yml",
+      ".gitignore",
+      ".gitattributes"
+    ],
+    "H4_contracts": [
+      "config/**",
+      "configs/**",
+      "**/config.py",
+      "**/config.yaml",
+      "**/config.yml",
+      "schemas/**",
+      "**/schema.py",
+      "models/**",
+      "pipeline/**/*config*.py",
+      "src/**/config.py"
+    ],
+    "H5_implementation": [
+      "pipeline/**",
+      "src/**",
+      "notebooks/**",
+      "main.py",
+      "*.ipynb"
+    ],
+    "ENV_references": [".env", ".env.example", ".env.local"]
+  },
+
+  "exclude_patterns": [
+    "**/__pycache__/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/.ipynb_checkpoints/**",
+    "**/.pytest_cache/**",
+    "**/.mypy_cache/**",
+    "**/.ruff_cache/**",
+    "**/*.egg-info/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/*.log",
+    "**/data/**",
+    "**/*.csv",
+    "**/*.tsv",
+    "**/*.parquet",
+    "**/*.feather",
+    "**/*.pkl",
+    "**/*.pickle",
+    "**/*.joblib",
+    "**/*.h5",
+    "**/*.hdf5",
+    "**/*.pt",
+    "**/*.pth",
+    "**/*.ckpt",
+    "**/*.onnx",
+    "**/*.npy",
+    "**/*.npz",
+    "**/graphify-out/**",
+    "bootstrap/init_vault.py",
+    "bootstrap/stacks/**",
+    "bootstrap/vault-skeleton/**",
+    "scripts/vault_sync.py",
+    "scripts/lib/**",
+    "hooks/post-commit",
+    "CHANGELOG.md"
+  ],
+
+  "env_scan_scope": ["pipeline/**", "src/**", "notebooks/**", "*.py"],
+
+  "vault_protected_status": ["locked"],
+
+  "report_size_limits": {
+    "max_files": 100,
+    "max_diff_chars_per_file": 500,
+    "split_threshold_files": 30
+  }
+}

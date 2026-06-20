@@ -1,0 +1,175 @@
+---
+status: stable
+type: decision
+layer: H3
+created: 2026-06-20
+---
+
+# Arquitectura — Docker AR Tutor
+
+## Estructura del monorepo
+
+```
+docker_ar_experience_v2/
+├── app/
+│   ├── frontend/          ← Next.js app (mobile-first, web + AR shell)
+│   ├── services/
+│   │   └── rag-service/   ← Fastify + pgvector + OpenAI
+│   └── docs/              ← documentación técnica interna
+├── packages/
+│   └── shared/            ← tipos TypeScript + schemas Zod compartidos
+├── vault/                 ← vault semántico (fuente de verdad H1-H3)
+├── tasks/                 ← specs de delegación a Codex
+│   ├── active/
+│   ├── completed/
+│   └── evaluated/
+└── scripts/               ← engine vault-sync
+```
+
+## Separación de responsabilidades
+
+### Frontend: capas de layout
+
+```
+HeaderShell          ← barra superior, logo, nav mínima
+MobileDrawer         ← drawer lateral en mobile (Radix Sheet)
+PageShell            ← layout público (home, info)
+ExperienceShell      ← layout de la experiencia de pregunta/respuesta
+ARShell              ← layout que inicializa AR y monta la escena
+```
+
+Regla: los shells **no tienen lógica de dominio**. Solo estructuran. La lógica vive en hooks o en el servicio AR.
+
+### Frontend: capas de componentes
+
+```
+components/ui/           ← shadcn/ui primitivos (Button, Card, Badge, Table, etc.)
+components/layout/       ← HeaderShell, MobileDrawer, PageShell, ExperienceShell, ARShell
+components/learning/     ← componentes pedagógicos (ConceptCard, MiniQuiz, CommandRunner, etc.)
+components/ar/           ← lógica AR (ARExperience, SpatialBoard, SpatialPanel, FocusController, etc.)
+```
+
+**Los componentes en `components/learning/` no saben que existen en AR.** Son componentes React normales que se ven bien en DOM. El sistema AR los envuelve en CSS3DObject para proyectarlos.
+
+**Los componentes en `components/ar/` no tienen lógica pedagógica.** Solo manejan posición, escala, rotación, focus, y el ciclo de render Three.js/CSS3D.
+
+### Frontend: separación WebGL vs CSS3D
+
+**Capa WebGL (Three.js)**:
+- Escena base, cámara, matrices
+- MindAR anchor
+- Objetos decorativos: whale, partículas, líneas, marcos
+- NO renderiza UI real
+
+**Capa CSS3D (CSS3DRenderer)**:
+- Paneles DOM reales como CSS3DObject
+- Componentes React proyectados en espacio 3D
+- SÍ mantiene estado React, eventos, Tailwind
+
+Ambas capas **comparten la misma cámara Three.js** y el mismo loop `requestAnimationFrame`. El CSS3DRenderer usa la misma `camera` y `domElement` container que el WebGL renderer, superpuestos via CSS (`position: absolute`, mismo z-index stack).
+
+### RAG Service: responsabilidades
+
+```
+src/
+  routes/          ← endpoints Fastify (H4 — contratos)
+  schemas/         ← tipos Zod de request/response (H4)
+  plugins/         ← plugins Fastify (db, openai, cors, etc.) (H4)
+  services/        ← lógica de negocio (H5)
+    ingest.ts      ← clonar/parsear docs Docker, chunking, embeddings, load a pgvector
+    retrieval.ts   ← búsqueda vectorial + keyword (híbrido)
+    llm.ts         ← orquestación OpenAI: system prompt + contexto + respuesta estructurada
+    cache.ts       ← cache de respuestas (si aplica)
+  lib/             ← helpers internos (H5)
+```
+
+Endpoints mínimos v1:
+- `GET /health`
+- `POST /ask` → recibe `{ question: string }`, devuelve respuesta estructurada con componentes
+- `POST /ingest` → dispara pipeline de ingestión (protegido, solo interno)
+
+### Contrato LLM → UI (invariante crítico)
+
+El LLM produce un JSON con este shape (schema Zod en `packages/shared`):
+
+```typescript
+type LLMResponse = {
+  topic: string
+  components: Array<ComponentSpec>
+}
+
+type ComponentSpec = {
+  type: ComponentType   // catálogo cerrado: "ConceptCard" | "ComparisonTable" | "MiniQuiz" | ...
+  props: Record<string, unknown>  // tipado específico por tipo
+  priority: number      // 1 = principal, 2 = secundario (influye en layout)
+}
+```
+
+El sistema mapea `ComponentSpec[]` a React components reales. **El LLM nunca decide posición, escala, rotación ni distribución espacial.**
+
+## Catálogo de componentes pedagógicos (v1)
+
+| Tipo | Descripción |
+|------|-------------|
+| `ConceptCard` | Tarjeta con concepto, definición e icono |
+| `ComparisonTable` | Tabla comparativa (ej: image vs container) |
+| `MiniQuiz` | Pregunta de opción múltiple con feedback |
+| `CommandRunner` | Bloque de comando Docker con descripción y botón copiar |
+| `DiagramPanel` | Panel para diagramas (SVG estático o animado) |
+| `StepwiseStepper` | Proceso paso a paso numerado |
+| `FlashcardDeck` | Mazo de tarjetas frente/reverso |
+| `CodeExplanation` | Snippet de código con anotaciones |
+| `ChecklistPanel` | Lista de verificación interactiva |
+
+## Board espacial: distribución radial por paneles planos
+
+El board AR es un arco de paneles planos, NO una esfera continua.
+
+```
+           [Panel 2]
+
+   [Panel 1]       [Panel 3]
+
+[Panel 0]             [Panel 4]
+```
+
+Cada panel es un `CSS3DObject` con:
+- `position`: calculada algorítmicamente en función del índice y radio del arco
+- `rotation`: orientada hacia el centro (cámara del usuario)
+- `scale`: uniforme por defecto, escalada por focus
+- `opacity`: 1.0 activo, 0.4 inactivo
+- `priority`: define order de prominencia si hay muchos paneles
+
+El `RadialPanelLayout` calcula las posiciones. El `FocusController` maneja el estado activo/inactivo.
+
+## Focus system
+
+1. Usuario toca un panel.
+2. El panel activo: scale 1.2, opacity 1.0, se acerca ligeramente (z offset).
+3. Los demás paneles: opacity 0.4.
+4. Tap fuera o botón back: vuelve al overview (todos panels en posición base).
+
+Las animaciones de focus/unfocus son responsabilidad de GSAP, no de React state directamente.
+
+## Convenciones de naming
+
+- **Archivos TypeScript**: `kebab-case` en frontend (componentes: `PascalCase.tsx`)
+- **Componentes React**: `PascalCase`
+- **Hooks**: `use` prefix en camelCase (`useSpatialBoard`, `useFocusController`)
+- **Endpoints REST**: `/health`, `/ask`, `/ingest` — plural solo si colección, snake_case prohibido en URLs
+- **Variables env**: `SCREAMING_SNAKE_CASE` con prefijo por servicio (`RAG_`, `OPENAI_`, `DB_`)
+- **Tablas DB**: plural snake_case (`documents`, `document_chunks`)
+
+## Manejo de errores
+
+- **RAG Service**: errores de OpenAI/pgvector → log + respuesta 500 con message genérico. Nunca exponer stack traces.
+- **Frontend AR**: errores de MindAR → mostrar mensaje "Target no detectado" en la UI web (no en AR). Errores de fetch al RAG service → toast de error con posibilidad de reintentar.
+- **Contrato LLM**: si el JSON de respuesta no valida el schema Zod → log del error + respuesta fallback con `ConceptCard` genérico. Nunca romper la experiencia AR por un schema inválido.
+
+## Decisiones pendientes
+
+- [ ] **Cache de respuestas RAG**: ¿cache por hash de pregunta normalizada o sin cache en v1?
+- [ ] **Hybrid retrieval**: ¿pgvector full-text search suficiente o agregar FTS separado?
+- [ ] **WebSocket vs polling**: ¿streaming de respuesta RAG al frontend o esperar respuesta completa?
+- [ ] **Graphify**: activar post-scaffolds para extraer call graph del RAG service y verificar separación de capas.
+- [ ] **Splash screen / onboarding AR**: ¿guía visual de "apuntá la cámara al target" en v1?

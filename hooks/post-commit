@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# post-commit: dispara el engine vault_sync para regenerar
+# .vault-sync/change_report.json y .vault-sync/facts.json tras cada commit.
+#
+# Reglas:
+#   - El hook NUNCA bloquea un commit (ya ocurrió). Sale 0 pase lo que pase.
+#   - Loguea a .vault-sync/post-commit.log para diagnóstico.
+#   - No asume paths absolutos del host: usa `git rev-parse --show-toplevel`.
+#
+# Instalación: la copia la realiza bootstrap/init_vault.py durante el bootstrap.
+# Si lo instalás a mano, asegurate de `chmod +x .git/hooks/post-commit`.
+
+set +e
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT" || exit 0
+
+# Resolver el binario de Python sin asumir alias específico.
+PY=""
+if command -v python >/dev/null 2>&1; then
+  PY="python"
+elif command -v python3 >/dev/null 2>&1; then
+  PY="python3"
+elif command -v py >/dev/null 2>&1; then
+  # Windows launcher
+  PY="py"
+else
+  echo "[post-commit] No se encontró python en PATH. Salteando vault_sync."
+  exit 0
+fi
+
+if [ ! -f "scripts/vault_sync.py" ]; then
+  echo "[post-commit] scripts/vault_sync.py no presente. Salteando."
+  exit 0
+fi
+
+mkdir -p .vault-sync
+"$PY" scripts/vault_sync.py report >> .vault-sync/post-commit.log 2>&1
+RC=$?
+
+if [ $RC -eq 0 ]; then
+  echo "[post-commit] change_report.json actualizado. Ejecutá /sync en Claude Code para propagar."
+else
+  echo "[post-commit] vault_sync salió con código $RC. Revisar .vault-sync/post-commit.log"
+fi
+exit 0

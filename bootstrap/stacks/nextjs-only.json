@@ -1,0 +1,68 @@
+{
+  "_doc": "Stack archetype: Frontend Next.js standalone (sin backend en el monorepo).",
+  "_doc_extractor": "Reusa intencionalmente el extractor 'nextjs-laravel' (no hay un 'nextjs' aparte). El extractor mira `Frontend/` y `Backend/`; como `Backend/` no existe en este archetype, esa rama queda vacía en facts.json y se ignora. Si te confunde el nombre en `vault_sync.config.json`, es esperado — está documentado acá.",
+  "schema_version": "1.0",
+  "project_name": "__PROJECT_NAME__",
+  "vault_path": "__VAULT_ABSOLUTE_PATH__",
+  "extractor": "nextjs-laravel",
+
+  "hierarchy_mapping": {
+    "H1_intent": ["vault/intent/**"],
+    "H2_requirements": ["vault/domain/**", "vault/raw/**"],
+    "H3_architecture": [
+      "vault/decisions/**",
+      "components.json",
+      "tsconfig.json",
+      "next.config.*",
+      "postcss.config.*",
+      "eslint.config.*",
+      "app/globals.css",
+      "package.json",
+      ".gitignore",
+      ".gitattributes"
+    ],
+    "H4_contracts": [
+      "components/ui/**",
+      "components/layout/**",
+      "components/custom/**",
+      "app/api/**",
+      "lib/**",
+      "hooks/**",
+      "types/**",
+      "app/**/layout.tsx"
+    ],
+    "H5_implementation": [
+      "app/**/page.tsx",
+      "app/**/loading.tsx",
+      "app/**/error.tsx",
+      "components/**"
+    ],
+    "ENV_references": [".env", ".env.example", ".env.local", ".env.production"]
+  },
+
+  "exclude_patterns": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/*.lock",
+    "**/*-lock.json",
+    "**/*.log",
+    "**/graphify-out/**",
+    "bootstrap/init_vault.py",
+    "bootstrap/stacks/**",
+    "bootstrap/vault-skeleton/**",
+    "scripts/vault_sync.py",
+    "scripts/lib/**",
+    "hooks/post-commit",
+    "CHANGELOG.md"
+  ],
+
+  "env_scan_scope": ["app/**", "components/**", "lib/**", "src/**", "hooks/**"],
+
+  "vault_protected_status": ["locked"],
+
+  "report_size_limits": {
+    "max_files": 100,
+    "max_diff_chars_per_file": 500,
+    "split_threshold_files": 30
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "_doc": "Stack archetype: Next.js (App Router) + Laravel. Preservado bit-equivalente desde FarMedic.",
+  "_doc_casing": "Frontend/ y Backend/ con mayúscula — convención del monorepo probado.",
+  "schema_version": "1.0",
+  "project_name": "__PROJECT_NAME__",
+  "vault_path": "__VAULT_ABSOLUTE_PATH__",
+  "extractor": "nextjs-laravel",
+
+  "hierarchy_mapping": {
+    "H1_intent": ["vault/intent/**"],
+    "H2_requirements": ["vault/domain/**", "vault/raw/**"],
+    "H3_architecture": [
+      "vault/decisions/**",
+      "Frontend/components.json",
+      "Frontend/tsconfig.json",
+      "Frontend/next.config.*",
+      "Frontend/postcss.config.*",
+      "Frontend/eslint.config.*",
+      "Frontend/app/globals.css",
+      "Frontend/package.json",
+      "Backend/composer.json",
+      "Backend/config/**",
+      "Backend/bootstrap/**",
+      "Backend/phpunit.xml",
+      ".gitignore",
+      ".gitattributes"
+    ],
+    "H4_contracts": [
+      "Backend/database/migrations/**",
+      "Backend/database/seeders/**",
+      "Backend/database/factories/**",
+      "Backend/routes/**",
+      "Backend/app/Models/**",
+      "Backend/app/Http/Resources/**",
+      "Backend/app/Http/Requests/**",
+      "Backend/app/Policies/**",
+      "Frontend/components/ui/**",
+      "Frontend/components/layout/**",
+      "Frontend/components/custom/**",
+      "Frontend/app/api/**",
+      "Frontend/lib/**",
+      "Frontend/hooks/**",
+      "Frontend/types/**",
+      "Frontend/app/**/layout.tsx"
+    ],
+    "H5_implementation": [
+      "Backend/app/Http/Controllers/**",
+      "Backend/app/Http/Middleware/**",
+      "Backend/app/Services/**",
+      "Backend/app/Console/**",
+      "Backend/app/Jobs/**",
+      "Backend/app/Mail/**",
+      "Backend/resources/**",
+      "Frontend/app/**/page.tsx",
+      "Frontend/app/**/loading.tsx",
+      "Frontend/app/**/error.tsx",
+      "Frontend/components/**"
+    ],
+    "ENV_references": ["**/.env", "**/.env.example", "**/.env.local"]
+  },
+
+  "exclude_patterns": [
+    "**/node_modules/**",
+    "**/vendor/**",
+    "**/.next/**",
+    "**/storage/**",
+    "**/bootstrap/cache/**",
+    "**/*.lock",
+    "**/*-lock.json",
+    "**/*.log",
+    "**/graphify-out/**",
+    "bootstrap/init_vault.py",
+    "bootstrap/stacks/**",
+    "bootstrap/vault-skeleton/**",
+    "scripts/vault_sync.py",
+    "scripts/lib/**",
+    "hooks/post-commit",
+    "CHANGELOG.md"
+  ],
+
+  "env_scan_scope": {
+    "Backend": ["app/**", "routes/**", "database/**"],
+    "Frontend": ["app/**", "components/**", "lib/**", "src/**"]
+  },
+
+  "vault_protected_status": ["locked"],
+
+  "report_size_limits": {
+    "max_files": 100,
+    "max_diff_chars_per_file": 500,
+    "split_threshold_files": 30
+  }
+}

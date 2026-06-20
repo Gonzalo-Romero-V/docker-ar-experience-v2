@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0",
+  "project_name": "Docker AR Tutor",
+  "vault_path": "C:/Users/Gonzalo/Dev/MATERIAS/03_EVA/docker_ar_experience_v2/vault",
+  "extractor": "generic",
+
+  "hierarchy_mapping": {
+    "H1_intent": ["vault/intent/**"],
+    "H2_requirements": ["vault/domain/**", "vault/raw/**"],
+    "H3_architecture": [
+      "vault/decisions/**",
+      "app/frontend/package.json",
+      "app/frontend/tsconfig.json",
+      "app/frontend/next.config.*",
+      "app/frontend/tailwind.config.*",
+      "app/frontend/components.json",
+      "app/services/*/package.json",
+      "packages/shared/package.json",
+      "package.json",
+      "docker-compose*.yml",
+      "Dockerfile*",
+      ".gitignore"
+    ],
+    "H4_contracts": [
+      "app/frontend/components/ui/**",
+      "app/frontend/components/layout/**",
+      "app/frontend/app/api/**",
+      "app/frontend/lib/**",
+      "app/frontend/hooks/**",
+      "app/frontend/types/**",
+      "app/frontend/app/**/layout.tsx",
+      "packages/shared/src/**",
+      "app/services/*/src/routes/**",
+      "app/services/*/src/schemas/**",
+      "app/services/*/src/types/**",
+      "app/services/*/src/plugins/**"
+    ],
+    "H5_implementation": [
+      "app/frontend/app/**/page.tsx",
+      "app/frontend/app/**/loading.tsx",
+      "app/frontend/app/**/error.tsx",
+      "app/frontend/components/ar/**",
+      "app/frontend/components/learning/**",
+      "app/frontend/components/custom/**",
+      "app/services/*/src/handlers/**",
+      "app/services/*/src/services/**",
+      "app/services/*/src/lib/**"
+    ],
+    "ENV_references": [
+      ".env",
+      ".env.example",
+      "app/frontend/.env",
+      "app/frontend/.env.local",
+      "app/frontend/.env.example",
+      "app/services/*/.env",
+      "app/services/*/.env.example"
+    ]
+  },
+
+  "exclude_patterns": [
+    "**/node_modules/**",
+    "**/__pycache__/**",
+    "**/.venv/**",
+    "**/.next/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/graphify-out/**",
+    "**/*.lock",
+    "**/*-lock.json",
+    "**/*.log",
+    "bootstrap/init_vault.py",
+    "bootstrap/stacks/**",
+    "bootstrap/vault-skeleton/**",
+    "scripts/vault_sync.py",
+    "scripts/lib/**",
+    "hooks/post-commit",
+    "tasks/completed/**",
+    "tasks/evaluated/**"
+  ],
+
+  "env_scan_scope": {
+    "Frontend": [
+      "app/frontend/app/**",
+      "app/frontend/components/**",
+      "app/frontend/lib/**",
+      "app/frontend/hooks/**"
+    ],
+    "RAGService": [
+      "app/services/rag-service/src/**"
+    ]
+  },
+
+  "vault_protected_status": ["locked"],
+
+  "report_size_limits": {
+    "max_files": 100,
+    "max_diff_chars_per_file": 500,
+    "split_threshold_files": 30
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "_doc": "Stack archetype: Python + FastAPI (Pydantic schemas, SQLAlchemy / Alembic).",
+  "_doc_status": "Probado a nivel patterns; el extractor 'python-generic' es perfectible y se actualiza conforme se use en proyectos reales.",
+  "_doc_casing": "lowercase — convención Python/Unix.",
+  "schema_version": "1.0",
+  "project_name": "__PROJECT_NAME__",
+  "vault_path": "__VAULT_ABSOLUTE_PATH__",
+  "extractor": "python-generic",
+
+  "hierarchy_mapping": {
+    "H1_intent": ["vault/intent/**"],
+    "H2_requirements": ["vault/domain/**", "vault/raw/**"],
+    "H3_architecture": [
+      "vault/decisions/**",
+      "pyproject.toml",
+      "requirements*.txt",
+      "alembic.ini",
+      "Dockerfile",
+      "docker-compose*.yml",
+      ".gitignore",
+      ".gitattributes"
+    ],
+    "H4_contracts": [
+      "app/models/**",
+      "app/schemas/**",
+      "app/db/**",
+      "alembic/versions/**",
+      "app/api/**/routes.py",
+      "app/api/**/dependencies.py",
+      "app/core/config.py"
+    ],
+    "H5_implementation": [
+      "app/services/**",
+      "app/api/**/endpoints.py",
+      "app/api/**/handlers.py",
+      "app/main.py",
+      "app/workers/**",
+      "app/tasks/**"
+    ],
+    "ENV_references": [".env", ".env.example", ".env.local"]
+  },
+
+  "exclude_patterns": [
+    "**/__pycache__/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/.pytest_cache/**",
+    "**/.mypy_cache/**",
+    "**/.ruff_cache/**",
+    "**/*.egg-info/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/*.log",
+    "**/graphify-out/**",
+    "bootstrap/init_vault.py",
+    "bootstrap/stacks/**",
+    "bootstrap/vault-skeleton/**",
+    "scripts/vault_sync.py",
+    "scripts/lib/**",
+    "hooks/post-commit",
+    "CHANGELOG.md"
+  ],
+
+  "env_scan_scope": ["app/**", "tests/**"],
+
+  "vault_protected_status": ["locked"],
+
+  "report_size_limits": {
+    "max_files": 100,
+    "max_diff_chars_per_file": 500,
+    "split_threshold_files": 30
+  }
+}
