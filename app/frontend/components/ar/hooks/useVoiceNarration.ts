@@ -27,15 +27,18 @@ export function useVoiceNarration() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        console.error('[TTS] backend responded', res.status, res.statusText);
+        return;
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       blobUrlRef.current = url;
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.play().catch(() => {/* autoplay blocked, user must click play */});
-    } catch {
-      // TTS unavailable — fail silently
+      audio.play().catch((err) => console.warn('[TTS] play() blocked:', err));
+    } catch (err) {
+      console.error('[TTS] fetch failed — is the backend running on :3000?', err);
     }
   }, []);
 
