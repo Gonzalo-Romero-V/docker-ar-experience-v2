@@ -7,6 +7,7 @@ import { ARShell } from '@/components/ar/ARShell';
 import type { AcquisitionContext } from '@/components/ar/ARShell';
 import { ExplorationSphere } from '@/components/ar/ExplorationSphere';
 import { useBeltCalibration } from '@/components/ar/hooks/useBeltCalibration';
+import { useVoiceNarration } from '@/components/ar/hooks/useVoiceNarration';
 import {
   ConceptCard,
   ComparisonTable,
@@ -97,6 +98,7 @@ export default function ExperienceClient() {
   const [loadError, setLoadError] = useState(false);
   const [acquisitionCtx, setAcquisitionCtx] = useState<AcquisitionContext | null>(null);
   const { theta0, updateFromAnchor } = useBeltCalibration();
+  const { speak, stop } = useVoiceNarration();
 
   useEffect(() => {
     const raw = sessionStorage.getItem('ar_response');
@@ -117,8 +119,10 @@ export default function ExperienceClient() {
     (ctx: AcquisitionContext) => {
       updateFromAnchor(ctx.anchorPosition);
       setAcquisitionCtx(ctx);
+      // Narrate the summary when the AR scene activates (one-shot per acquisition)
+      if (response?.answer_summary) speak(response.answer_summary);
     },
-    [updateFromAnchor],
+    [updateFromAnchor, response, speak],
   );
 
   const handleTargetUpdate = useCallback(
@@ -158,12 +162,28 @@ export default function ExperienceClient() {
       <div className="absolute inset-x-0 top-0 z-20 border-b border-white/10 bg-black/70 px-4 py-2 backdrop-blur-sm">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs text-white/70 line-clamp-2">{response.answer_summary}</p>
-          <button
-            className="shrink-0 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-white"
-            onClick={() => router.push('/')}
-          >
-            ← Nueva pregunta
-          </button>
+          <div className="flex shrink-0 gap-1">
+            <button
+              className="rounded-full border border-white/20 bg-white/10 px-2 py-1 text-xs text-white"
+              title="Repetir narración"
+              onClick={() => speak(response.answer_summary)}
+            >
+              ▶
+            </button>
+            <button
+              className="rounded-full border border-white/20 bg-white/10 px-2 py-1 text-xs text-white"
+              title="Detener narración"
+              onClick={stop}
+            >
+              ■
+            </button>
+            <button
+              className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-white"
+              onClick={() => router.push('/')}
+            >
+              ← Nueva
+            </button>
+          </div>
         </div>
         {response.grounding !== 'grounded' && (
           <p className="mt-1 text-xs text-amber-400">
@@ -192,10 +212,11 @@ export default function ExperienceClient() {
       {acquisitionCtx && (
         <ExplorationSphere
           camera={acquisitionCtx.camera}
+          renderer={acquisitionCtx.renderer}
           cssRenderer={acquisitionCtx.cssRenderer}
           panels={panels}
           theta0={theta0}
-          radius={0.8}
+          radius={1.25}
           arcAngleDeg={270}
         />
       )}

@@ -65,7 +65,7 @@ const envelopeJsonSchema = makeOpenAIStrict(
 ) as Record<string, unknown>;
 
 const FALLBACK: ResponseEnvelope = {
-  answer_summary: 'Could not process your question. Please try again.',
+  answer_summary: 'No se pudo procesar tu pregunta. Por favor intentá de nuevo.',
   level: 'beginner',
   grounding: 'weak',
   confidence: 0,
@@ -74,7 +74,7 @@ const FALLBACK: ResponseEnvelope = {
       type: 'ConceptCard',
       props: {
         title: 'Error',
-        definition: 'An error occurred processing your question. Please try again.',
+        definition: 'Ocurrió un error al procesar tu pregunta. Por favor intentá de nuevo.',
         level: 'beginner',
       },
     },

@@ -41,11 +41,23 @@ export function SpatialPanel({
     let active = true;
     let css3dObj: THREE.Object3D | null = null;
 
+    // Outer shell: no overflow clip so CSS3D 3D transform doesn't detach shadows.
+    // Visual chrome is on an inner wrapper to stay within the painted area.
     const panelEl = document.createElement('div');
-    panelEl.style.width = `${PANEL_WIDTH}px`;
-    panelEl.style.height = `${PANEL_HEIGHT}px`;
-    panelEl.style.pointerEvents = 'auto';
-    panelEl.style.overflow = 'hidden';
+    panelEl.style.cssText =
+      `width:${PANEL_WIDTH}px;height:${PANEL_HEIGHT}px;pointer-events:auto;`;
+
+    // Inner wrapper: all visual styling lives here so effects stay within bounds.
+    // box-shadow is intentionally avoided — it detaches under CSS3D perspective.
+    const inner = document.createElement('div');
+    inner.style.cssText =
+      'width:100%;height:100%;overflow:hidden;border-radius:16px;' +
+      'background:linear-gradient(160deg,rgba(8,18,38,0.96) 0%,rgba(4,12,28,0.98) 100%);' +
+      'border-top:2px solid rgba(36,150,237,0.9);' +
+      'border-left:1px solid rgba(36,150,237,0.35);' +
+      'border-right:1px solid rgba(36,150,237,0.35);' +
+      'border-bottom:1px solid rgba(36,150,237,0.2);';
+    panelEl.appendChild(inner);
     panelElRef.current = panelEl;
 
     (async () => {
@@ -70,7 +82,9 @@ export function SpatialPanel({
         basePosition: position.clone(),
         baseScale: SCALE_FACTOR,
       });
-      setPortalTarget(panelEl);
+      // Portal targets the inner wrapper so React content is inside the styled card
+      const innerEl = panelEl.querySelector('div') as HTMLDivElement;
+      setPortalTarget(innerEl);
     })();
 
     return () => {

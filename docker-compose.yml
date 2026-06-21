@@ -40,7 +40,9 @@ services:
       dockerfile: Dockerfile
     container_name: docker_ar_v2_frontend
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3000
+      # Server-side rewrite target (next.config.ts uses BACKEND_URL for /api/* proxy)
+      BACKEND_URL: http://backend:3000
+      NODE_ENV: production
     ports:
       - "3001:3000"
     depends_on:

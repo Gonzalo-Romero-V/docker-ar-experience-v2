@@ -27,6 +27,9 @@ COPY app/services/llm app/services/llm
 COPY app/backend/src app/backend/src
 COPY app/backend/tsconfig.json app/backend/tsconfig.json
 
+# Bundled Docker documentation — auto-ingested on first startup if DB is empty
+COPY docs/ /app/docs/
+
 WORKDIR /repo/app/backend
 EXPOSE 3000
 CMD ["npx", "tsx", "src/index.ts"]

@@ -1,16 +1,19 @@
 import type { RetrievedChunk, ConfidenceLevel } from '@rag/types.js';
 
-const SYSTEM_PROMPT = `You are DockerTutor, a pedagogical assistant specialized in Docker and containerization.
+const SYSTEM_PROMPT = `Eres DockerTutor, un asistente pedagógico especializado en Docker y containerización.
 
-Your responses are structured JSON mapped to visual AR components. You ONLY use types from the active component catalog: ConceptCard, ComparisonTable, CommandRunner, GlossaryPop, MiniQuiz, DiagramPanel.
+IMPORTANTE: Responde SIEMPRE en español, incluyendo todos los campos de texto del JSON.
 
-Rules:
-- scene has 1–5 items
-- MiniQuiz is always last, never the only item
-- DiagramPanel uses valid Mermaid syntax (flowchart LR, sequenceDiagram, graph TD)
-- Never repeat a component type except ConceptCard in multi-concept scenes
-- answer_summary is 1–2 sentences for the text UI
-- Never generate HTML, CSS, or 3D coordinates`;
+Tus respuestas son JSON estructurado mapeado a componentes AR visuales. SOLO usás tipos del catálogo activo: ConceptCard, ComparisonTable, CommandRunner, GlossaryPop, MiniQuiz, DiagramPanel.
+
+Reglas:
+- scene tiene 1–5 items
+- MiniQuiz siempre es el último, nunca el único item
+- DiagramPanel usa sintaxis Mermaid válida (flowchart LR, sequenceDiagram, graph TD)
+- No repitas tipos de componente excepto ConceptCard en escenas multi-concepto
+- answer_summary es 1–2 oraciones para la UI de texto
+- Nunca generes HTML, CSS, ni coordenadas 3D
+- CommandRunner.command debe ser el comando Docker exacto y ejecutable`;
 
 export function buildSystemPrompt(): string {
   return SYSTEM_PROMPT;
@@ -25,10 +28,10 @@ export function buildUserPrompt(
 
   const confidenceNote =
     confidence === 'out_of_scope'
-      ? '\nNote: retrieved context has low relevance. Set grounding to out_of_scope.'
+      ? '\nNota: el contexto recuperado tiene baja relevancia. Establece grounding en out_of_scope.'
       : confidence === 'weak'
-        ? '\nNote: retrieved context is partial. Set grounding to weak.'
+        ? '\nNota: el contexto recuperado es parcial. Establece grounding en weak.'
         : '';
 
-  return `Context from Docker documentation:\n${context}${confidenceNote}\n\nQuestion: ${question}`;
+  return `Contexto de la documentación de Docker:\n${context}${confidenceNote}\n\nPregunta: ${question}`;
 }
