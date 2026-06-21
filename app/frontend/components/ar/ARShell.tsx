@@ -7,6 +7,7 @@ import type { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 
 export interface AcquisitionContext {
   camera: THREE.PerspectiveCamera;
+  renderer: THREE.WebGLRenderer;
   cssRenderer: CSS3DRenderer;
   anchorPosition: THREE.Vector3;
 }
@@ -61,7 +62,11 @@ export function ARShell({ imageSrc, onAcquired, onTargetUpdate, children }: ARSh
           uiError: 'no',
         });
 
-        const { renderer, camera } = mindarInstance;
+        const { renderer, scene: arScene, camera } = mindarInstance as {
+          renderer: THREE.WebGLRenderer;
+          scene: THREE.Scene;
+          camera: THREE.PerspectiveCamera;
+        };
 
         const cssRenderer = new CSS3DRenderer();
         cssRenderer.setSize(container.offsetWidth, container.offsetHeight);
@@ -69,9 +74,11 @@ export function ARShell({ imageSrc, onAcquired, onTargetUpdate, children }: ARSh
           'position:absolute;top:0;left:0;pointer-events:none;z-index:2;';
         container.appendChild(cssRenderer.domElement);
 
-        // Animation loop: relay anchor position for belt calibration.
-        // CSS3D rendering is owned by ExplorationSphere (its own RAF).
+        // Render the (empty) AR scene each frame so the WebGL canvas is cleared
+        // to transparent — video feed shows through underneath.
+        // Anchor position is relayed to ExplorationSphere for belt calibration.
         renderer.setAnimationLoop(() => {
+          renderer.render(arScene, camera);
           if (anchorRef.current) {
             onTargetUpdateRef.current?.(
               anchorRef.current.group.position.clone(),
@@ -88,6 +95,26 @@ export function ARShell({ imageSrc, onAcquired, onTargetUpdate, children }: ARSh
           return;
         }
 
+        // After start() the layout is stable — re-measure and apply full-screen CSS.
+        // MindAR defaults to object-fit:contain (black bars) and z-index:-2 on video.
+        // Canvas has no explicit position — both must be forced to fill 100%.
+        const w = container.offsetWidth;
+        const h = container.offsetHeight;
+
+        const videoEl = container.querySelector('video');
+        if (videoEl) {
+          (videoEl as HTMLElement).style.cssText =
+            'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;';
+        }
+        renderer.domElement.style.cssText =
+          'position:absolute;inset:0;width:100%;height:100%;z-index:1;';
+
+        // Resize CSS3DRenderer to the actual container size (was set before start() when
+        // the layout might not have been finalised on mobile).
+        cssRenderer.setSize(w, h);
+        cssRenderer.domElement.style.cssText =
+          'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;';
+
         setArStatus('scanning');
 
         const anchor = mindarInstance.addAnchor(0);
@@ -101,6 +128,7 @@ export function ARShell({ imageSrc, onAcquired, onTargetUpdate, children }: ARSh
             setArStatus('acquired');
             onAcquiredRef.current({
               camera,
+              renderer,
               cssRenderer,
               anchorPosition: anchor.group.position.clone(),
             });
@@ -124,7 +152,7 @@ export function ARShell({ imageSrc, onAcquired, onTargetUpdate, children }: ARSh
   }, [imageSrc]);
 
   return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-black">
+    <div ref={containerRef} className="absolute inset-0 overflow-hidden">
       {arStatus === 'loading' && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80">
           <div className="flex flex-col items-center gap-3 text-white">
